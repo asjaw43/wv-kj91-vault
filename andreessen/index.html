@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Builder's Operating System</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black: #0a0a0a;
+    --white: #f5f0e8;
+    --orange: #FF6B35;
+    --orange-dim: #ff6b3520;
+    --orange-mid: #ff6b3540;
+    --green: #2ecc71;
+    --green-dim: #2ecc7120;
+    --yellow: #f0c040;
+    --yellow-dim: #f0c04020;
+    --red: #e74c3c;
+    --red-dim: #e74c3c20;
+    --blue: #4a9eff;
+    --blue-dim: #4a9eff20;
+    --gray: #1a1a1a;
+    --gray2: #2a2a2a;
+    --gray3: #3a3a3a;
+    --text-muted: #666;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--black);
+    color: var(--white);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* HEADER */
+  .header {
+    padding: 48px 40px 32px;
+    border-bottom: 1px solid var(--gray3);
+    position: relative;
+    overflow: hidden;
+  }
+  .header::before {
+    content: '';
+    position: absolute;
+    top: -60px; right: -60px;
+    width: 300px; height: 300px;
+    background: radial-gradient(circle, var(--orange-mid) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .header-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: var(--orange);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+  .header-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(42px, 7vw, 72px);
+    line-height: 0.95;
+    letter-spacing: 1px;
+    color: var(--white);
+  }
+  .header-title span { color: var(--orange); }
+  .header-sub {
+    margin-top: 16px;
+    font-size: 14px;
+    color: var(--text-muted);
+    font-weight: 300;
+    max-width: 500px;
+    line-height: 1.6;
+  }
+  .progress-bar-wrap {
+    margin-top: 24px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .progress-bar-bg {
+    flex: 1;
+    height: 4px;
+    background: var(--gray3);
+    border-radius: 2px;
+    overflow: hidden;
+    max-width: 300px;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    background: var(--orange);
+    border-radius: 2px;
+    width: 0%;
+    transition: width 0.5s ease;
+  }
+  .progress-text {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--orange);
+  }
+
+  /* TABS */
+  .tabs {
+    display: flex;
+    gap: 0;
+    padding: 0 40px;
+    border-bottom: 1px solid var(--gray3);
+    overflow-x: auto;
+  }
+  .tab {
+    padding: 16px 24px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-muted);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    white-space: nowrap;
+    transition: all 0.2s;
+    letter-spacing: 0.5px;
+  }
+  .tab:hover { color: var(--white); }
+  .tab.active { color: var(--orange); border-bottom-color: var(--orange); }
+
+  /* MAIN CONTENT */
+  .content {
+    padding: 40px;
+    max-width: 900px;
+  }
+
+  /* SECTION */
+  .section { display: none; }
+  .section.active { display: block; }
+
+  /* CHECKLIST CARDS */
+  .checklist-intro {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 28px;
+    font-family: 'DM Mono', monospace;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .check-card {
+    background: var(--gray);
+    border: 1px solid var(--gray3);
+    border-radius: 12px;
+    padding: 24px 28px;
+    margin-bottom: 16px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  .check-card::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 4px;
+    background: var(--card-color, var(--orange));
+    transition: width 0.3s ease;
+  }
+  .check-card:hover { border-color: var(--gray3); transform: translateX(4px); }
+  .check-card.checked {
+    background: var(--gray2);
+    border-color: var(--card-color, var(--orange));
+  }
+  .check-card.checked::before { width: 6px; }
+
+  .card-top {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+  }
+  .checkbox {
+    width: 22px; height: 22px;
+    border-radius: 6px;
+    border: 2px solid var(--card-color, var(--orange));
+    flex-shrink: 0;
+    margin-top: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+  }
+  .check-card.checked .checkbox {
+    background: var(--card-color, var(--orange));
+  }
+  .checkmark {
+    opacity: 0;
+    font-size: 13px;
+    color: var(--black);
+    transition: opacity 0.2s;
+  }
+  .check-card.checked .checkmark { opacity: 1; }
+
+  .card-body { flex: 1; }
+  .card-number {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--card-color, var(--orange));
+    margin-bottom: 6px;
+    text-transform: uppercase;
+  }
+  .card-question {
+    font-size: 17px;
+    font-weight: 600;
+    line-height: 1.3;
+    color: var(--white);
+    margin-bottom: 8px;
+  }
+  .card-hint {
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+  .card-expand {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--gray3);
+    display: none;
+  }
+  .check-card.expanded .card-expand { display: block; }
+  .expand-row {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 10px;
+  }
+  .expand-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    color: var(--card-color, var(--orange));
+    text-transform: uppercase;
+    min-width: 80px;
+    padding-top: 1px;
+  }
+  .expand-value {
+    font-size: 13px;
+    color: #aaa;
+    line-height: 1.5;
+  }
+  .expand-btn {
+    margin-top: 12px;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--text-muted);
+    letter-spacing: 1px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .expand-arrow { transition: transform 0.2s; }
+  .check-card.expanded .expand-arrow { transform: rotate(180deg); }
+
+  /* RESET BUTTON */
+  .reset-btn {
+    margin-top: 8px;
+    background: none;
+    border: 1px solid var(--gray3);
+    color: var(--text-muted);
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.5px;
+  }
+  .reset-btn:hover { border-color: var(--orange); color: var(--orange); }
+
+  /* MENTAL MODELS */
+  .models-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+    gap: 20px;
+  }
+  .model-card {
+    background: var(--gray);
+    border: 1px solid var(--gray3);
+    border-radius: 12px;
+    padding: 28px;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s, border-color 0.2s;
+  }
+  .model-card:hover { transform: translateY(-3px); border-color: var(--card-color, var(--orange)); }
+  .model-card::after {
+    content: '';
+    position: absolute;
+    bottom: 0; right: 0;
+    width: 80px; height: 80px;
+    background: radial-gradient(circle, var(--card-glow) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .model-icon {
+    font-size: 28px;
+    margin-bottom: 16px;
+  }
+  .model-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    letter-spacing: 1px;
+    color: var(--card-color, var(--orange));
+    margin-bottom: 8px;
+  }
+  .model-def {
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.6;
+    margin-bottom: 16px;
+  }
+  .model-divider {
+    height: 1px;
+    background: var(--gray3);
+    margin-bottom: 16px;
+  }
+  .model-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .meta-row { display: flex; gap: 10px; align-items: flex-start; }
+  .meta-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 2px;
+    color: var(--card-color, var(--orange));
+    text-transform: uppercase;
+    min-width: 70px;
+    padding-top: 2px;
+  }
+  .meta-val { font-size: 12px; color: #999; line-height: 1.5; }
+
+  /* WARNINGS */
+  .warnings-list { display: flex; flex-direction: column; gap: 16px; }
+  .warning-card {
+    background: var(--gray);
+    border: 1px solid var(--gray3);
+    border-left: 4px solid var(--red);
+    border-radius: 12px;
+    padding: 24px 28px;
+    transition: transform 0.2s;
+  }
+  .warning-card:hover { transform: translateX(4px); }
+  .warning-top { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+  .warning-icon { font-size: 20px; }
+  .warning-title { font-size: 16px; font-weight: 600; color: var(--white); }
+  .warning-body { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
+  .warning-fix {
+    margin-top: 12px;
+    padding: 10px 14px;
+    background: var(--green-dim);
+    border-radius: 8px;
+    font-size: 12px;
+    color: var(--green);
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+  }
+
+  /* PRINCIPLES */
+  .principles-list { display: flex; flex-direction: column; gap: 20px; }
+  .principle-card {
+    background: var(--gray);
+    border: 1px solid var(--gray3);
+    border-radius: 12px;
+    padding: 28px;
+    display: flex;
+    gap: 24px;
+    transition: border-color 0.2s;
+  }
+  .principle-card:hover { border-color: var(--yellow); }
+  .principle-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 48px;
+    color: var(--gray3);
+    line-height: 1;
+    min-width: 50px;
+  }
+  .principle-content {}
+  .principle-title {
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--yellow);
+    margin-bottom: 8px;
+  }
+  .principle-body { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
+  .principle-quote {
+    margin-top: 12px;
+    padding-left: 12px;
+    border-left: 2px solid var(--yellow);
+    font-size: 13px;
+    color: #aaa;
+    font-style: italic;
+  }
+
+  /* SCORE PANEL */
+  .score-panel {
+    background: var(--gray);
+    border: 1px solid var(--gray3);
+    border-radius: 16px;
+    padding: 32px;
+    text-align: center;
+    margin-bottom: 32px;
+  }
+  .score-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 80px;
+    color: var(--orange);
+    line-height: 1;
+  }
+  .score-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    margin-top: 8px;
+  }
+  .score-message {
+    margin-top: 16px;
+    font-size: 15px;
+    color: var(--white);
+    line-height: 1.5;
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--black); }
+  ::-webkit-scrollbar-thumb { background: var(--gray3); border-radius: 3px; }
+
+  @media (max-width: 600px) {
+    .header { padding: 32px 20px 24px; }
+    .tabs { padding: 0 20px; }
+    .content { padding: 28px 20px; }
+    .models-grid { grid-template-columns: 1fr; }
+    .principle-card { flex-direction: column; gap: 8px; }
+    .principle-num { font-size: 32px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-label">Wisdom Vault · Entry 001 · Andreessen Framework</div>
+  <div class="header-title">The Builder's<br><span>Operating System</span></div>
+  <div class="header-sub">5 questions every builder must answer before making a big decision. Based on Marc Andreessen's core philosophy.</div>
+  <div class="progress-bar-wrap">
+    <div class="progress-bar-bg"><div class="progress-bar-fill" id="progressFill"></div></div>
+    <div class="progress-text" id="progressText">0 / 5 checked</div>
+  </div>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="showTab('checklist')">✓ Checklist</div>
+  <div class="tab" onclick="showTab('models')">◈ Mental Models</div>
+  <div class="tab" onclick="showTab('warnings')">⚠ Warnings</div>
+  <div class="tab" onclick="showTab('principles')">◆ Principles</div>
+</div>
+
+<div class="content">
+
+  <!-- CHECKLIST TAB -->
+  <div class="section active" id="tab-checklist">
+    <div class="checklist-intro">Run this before every big decision</div>
+
+    <div class="check-card" style="--card-color: #FF6B35;" onclick="toggleCard(this, 0)">
+      <div class="card-top">
+        <div class="checkbox"><span class="checkmark">✓</span></div>
+        <div class="card-body">
+          <div class="card-number">Question 01 · Fuel Source</div>
+          <div class="card-question">Am I running on internal fire or external reward?</div>
+          <div class="card-hint">Money and fame have a ceiling. Only internal drive runs at 4am when you are already rich.</div>
+          <div class="expand-btn"><span class="expand-arrow">▼</span> <span>Expand</span></div>
+          <div class="card-expand">
+            <div class="expand-row">
+              <div class="expand-label">If YES</div>
+              <div class="expand-value">You have infinite fuel. Protect it. Do not let external noise distract it.</div>
+            </div>
+            <div class="expand-row">
+              <div class="expand-label">If NO</div>
+              <div class="expand-value">You are running on borrowed energy. It will run out. Find your internal reason or reconsider the venture.</div>
+            </div>
+            <div class="expand-row">
+              <div class="expand-label">Example</div>
+              <div class="expand-value">Musk put his last $180M into SpaceX and Tesla simultaneously when both were near bankruptcy. No external reward justified that. Only internal fire did.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="check-card" style="--card-color: #4a9eff;" onclick="toggleCard(this, 1)">
+      <div class="card-top">
+        <div class="checkbox"><span class="checkmark">✓</span></div>
+        <div class="card-body">
+          <div class="card-number">Question 02 · Permission</div>
+          <div class="card-question">Am I waiting for permission that nobody will ever give me?</div>
+          <div class="card-hint">There is no license for entrepreneurship. No authority approving you. You just decide and start.</div>
+          <div class="expand-btn"><span class="expand-arrow">▼</span> <span>Expand</span></div>
+          <div class="card-expand">
+            <div class="expand-row">
+              <div class="expand-label">If YES</div>
+              <div class="expand-value">You are stuck in a psychological trap. The permission will never come. The door is already open. Walk through it.</div>
+            </div>
+            <div class="expand-row">
+              <div class="expand-label">If NO</div>
+              <div class="expand-value">Good. Keep moving. Ignore critics, corporate press, and anyone asking "who approved this?"</div>
+            </div>
+            <div class="expand-row">
+              <div class="expand-label">The Test</div>
+              <div class="expand-value">Ask: "What specific person or institution do I need approval from?" If the answer is nobody — you are already free. Act now.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="check-card" style="--card-color: #2ecc71;" onclick="toggleCard(this, 2)">
+      <div class="card-top">
+        <div class="checkbox"><span class="checkmark">✓</span></div>
+        <div class="card-body">
+          <div class="card-number">Question 03 · Bottleneck</div>
+          <div class="card-question">Do I know exactly what the single bottleneck is right now?</div>
+          <div class="card-hint">Every system has one constraint slowing everything else down. Find it. Fix it personally. Then find the next one.</div>
+          <div class="expand-btn"><span class="expand-arrow">▼</span> <span>Expand</span></div>
+          <div class="card-expand">
+            <div class="expand-row">
+              <div class="expand-label">How To</div>
+              <div class="expand-value">Map your entire production process from idea to output. Ask: what single step, if removed, would double our speed? That is your bottleneck this week.</div>
+            </div>
+            <div class="expand-row">
+              <div class="expand-label">Musk Method</div>
+              <div class="expand-value">He identifies the bottleneck, goes directly to the engineer responsible (skipping all layers), sits with them technically, and resolves it personally. Then moves to the next one.</div>
+            </div>
+            <div class="expand-row">
+              <div class="expand-label">Warning</div>
+              <div class="expand-value">In a 12-layer org, the CEO is the least informed person due to compounding lies. Stay close to the technical truth at all times.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="check-card" style="--card-color: #f0c040;" onclick="toggleCard(this, 3)">
+      <div class="card-top">
+        <div class="checkbox"><span class="checkmark">✓</span></div>
+        <div class="card-body">
+          <div class="card-number">Question 04 · Role Clarity</div>
+          <div class="card-question">Am I acting as a founder or a manager right now?</div>
+          <div class="card-hint">These are fundamentally different operating modes. Confusing them destroys companies. Know which one this moment requires.</div>
+          <div class="expand-btn"><span class="expand-arrow">▼</span> <span>Expand</span></div>
+          <div class="card-expand">
+            <div class="expand-row">
+              <div class="expand-label">Founder Mode</div>
+              <div class="expand-value">Creates from nothing. Sees what does not exist yet. Breaks rules. Needs technical depth. Best when product is being reinvented.</div>
+            </div>
+            <div class="expand-row">
+              <div class="expand-label">Manager Mode</div>
+              <div class="expand-value">Optimizes what exists. Runs systems. Delegates well. Best when product is stable. Fails when the fundamental nature of the product is shifting.</div>
+            </div>
+            <div class="expand-row">
+              <div class="expand-label">Key Insight</div>
+              <div class="expand-value">It is easier to teach a founder to manage than to teach a manager to found. If you are a builder — learn the management skills you are missing. Do not let someone replace you.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="check-card" style="--card-color: #c084fc;" onclick="toggleCard(this, 4)">
+      <div class="card-top">
+        <div class="checkbox"><span class="checkmark">✓</span></div>
+        <div class="card-body">
+          <div class="card-number">Question 05 · Psychological Fuel</div>
+          <div class="card-question">Is my dissatisfaction working for me or against me?</div>
+          <div class="card-hint">Great companies are often built from deep dissatisfaction. But unmanaged, it destroys you or your team. The question is: are you directing it?</div>
+          <div class="expand-btn"><span class="expand-arrow">▼</span> <span>Expand</span></div>
+          <div class="card-expand">
+            <div class="expand-row">
+              <div class="expand-label">Working FOR</div>
+              <div class="expand-value">Dissatisfaction with the status quo that drives you to build something better. This is your engine. Protect it.</div>
+            </div>
+            <div class="expand-row">
+              <div class="expand-label">Working AGAINST</div>
+              <div class="expand-value">Anxiety that paralyzes decisions. Neuroticism that burns your team. Self-criticism that slows your output.</div>
+            </div>
+            <div class="expand-row">
+              <div class="expand-label">The Trap</div>
+              <div class="expand-value">Solving for happiness might kill your ambition. The "best version of you" as a human being may be the worst version of you as a builder. Know what you are optimizing for.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <button class="reset-btn" onclick="resetChecklist()">↺ Reset Checklist</button>
+  </div>
+
+  <!-- MENTAL MODELS TAB -->
+  <div class="section" id="tab-models">
+    <div class="checklist-intro">6 mental models from the Andreessen framework</div>
+    <div class="models-grid">
+
+      <div class="model-card" style="--card-color: #FF6B35; --card-glow: #FF6B3530;">
+        <div class="model-icon">⚡</div>
+        <div class="model-name">The MilliElon</div>
+        <div class="model-def">A unit of measurement for a founder's determination and pain tolerance. Musk is the reference: he put his last $180M into two near-bankrupt companies simultaneously.</div>
+        <div class="model-divider"></div>
+        <div class="model-meta">
+          <div class="meta-row"><div class="meta-label">Use When</div><div class="meta-val">Deciding if a founder (or yourself) has what it takes to survive the hardest moments</div></div>
+          <div class="meta-row"><div class="meta-label">Question</div><div class="meta-val">"How many MilliElons do I have right now?"</div></div>
+        </div>
+      </div>
+
+      <div class="model-card" style="--card-color: #4a9eff; --card-glow: #4a9eff30;">
+        <div class="model-icon">🏋️</div>
+        <div class="model-name">The Barbell Effect</div>
+        <div class="model-def">Every industry splits into two extremes: tiny boutiques (specialized, personal) and massive scaled platforms. The middle always dies. There is no safe middle ground.</div>
+        <div class="model-divider"></div>
+        <div class="model-meta">
+          <div class="meta-row"><div class="meta-label">Use When</div><div class="meta-val">Positioning your product, company, or personal brand in any market</div></div>
+          <div class="meta-row"><div class="meta-label">Question</div><div class="meta-val">"Which side of the barbell am I on? Am I stuck in the middle?"</div></div>
+        </div>
+      </div>
+
+      <div class="model-card" style="--card-color: #2ecc71; --card-glow: #2ecc7130;">
+        <div class="model-icon">⚔️</div>
+        <div class="model-name">Maneuver Warfare</div>
+        <div class="model-def">Speed of decision-making is itself a weapon. Musk resolves a bottleneck in 4 hours. A traditional manager takes 6 months. Speed alone renders competitors irrelevant.</div>
+        <div class="model-divider"></div>
+        <div class="model-meta">
+          <div class="meta-row"><div class="meta-label">Use When</div><div class="meta-val">Competing against larger, slower incumbents. Speed is your asymmetric advantage.</div></div>
+          <div class="meta-row"><div class="meta-label">Question</div><div class="meta-val">"What is my cycle time vs. my competitor's cycle time?"</div></div>
+        </div>
+      </div>
+
+      <div class="model-card" style="--card-color: #f0c040; --card-glow: #f0c04030;">
+        <div class="model-icon">☁️</div>
+        <div class="model-name">The Big Gray Cloud</div>
+        <div class="model-def">In a 12-layer organization, each layer slightly adjusts the truth upward. By the time information reaches the CEO, it is completely distorted. The CEO is the least informed person in the building.</div>
+        <div class="model-divider"></div>
+        <div class="model-meta">
+          <div class="meta-row"><div class="meta-label">Use When</div><div class="meta-val">Building teams, hiring, or evaluating whether you still have technical truth access</div></div>
+          <div class="meta-row"><div class="meta-label">Question</div><div class="meta-val">"Can I still sit with my engineer at 2am and understand the real problem?"</div></div>
+        </div>
+      </div>
+
+      <div class="model-card" style="--card-color: #c084fc; --card-glow: #c084fc30;">
+        <div class="model-icon">🛡️</div>
+        <div class="model-name">The Phalanx Effect</div>
+        <div class="model-def">Moving from a lone operator to a collective firm creates "throw weight" that no individual can match. The firm becomes the product. Coordinated collective action beats individual talent.</div>
+        <div class="model-divider"></div>
+        <div class="model-meta">
+          <div class="meta-row"><div class="meta-label">Use When</div><div class="meta-val">Building partnerships, hiring, or competing against well-resourced incumbents</div></div>
+          <div class="meta-row"><div class="meta-label">Question</div><div class="meta-val">"Am I still a lone wolf when I should be building a phalanx?"</div></div>
+        </div>
+      </div>
+
+      <div class="model-card" style="--card-color: #ff8fab; --card-glow: #ff8fab30;">
+        <div class="model-icon">🌍</div>
+        <div class="model-name">World Malleability</div>
+        <div class="model-def">Reality has "give" in it. Most people live in a primitive, crude version of what the world could be — not because it cannot change, but because they never try to push it.</div>
+        <div class="model-divider"></div>
+        <div class="model-meta">
+          <div class="meta-row"><div class="meta-label">Use When</div><div class="meta-val">You feel stuck or like "the system" is fixed and cannot be changed</div></div>
+          <div class="meta-row"><div class="meta-label">Question</div><div class="meta-val">"Am I accepting this as fixed when it is actually just untouched?"</div></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- WARNINGS TAB -->
+  <div class="section" id="tab-warnings">
+    <div class="checklist-intro">5 traps that destroy builders</div>
+    <div class="warnings-list">
+
+      <div class="warning-card">
+        <div class="warning-top">
+          <div class="warning-icon">🍄</div>
+          <div class="warning-title">The Psychedelic Trap</div>
+        </div>
+        <div class="warning-body">Stressed founders who solve their internal anxiety through psychedelics often find peace — and then quit. They become surf instructors in Bali. The anxiety that was "destroying" them was also the fuel running the company. Solve the person, lose the founder.</div>
+        <div class="warning-fix">✓ Fix: Know the difference between anxiety that destroys and dissatisfaction that builds. Protect the second one.</div>
+      </div>
+
+      <div class="warning-card">
+        <div class="warning-top">
+          <div class="warning-icon">👔</div>
+          <div class="warning-title">The Managerial Handoff</div>
+        </div>
+        <div class="warning-body">Hiring a professional manager works when the product never changes (soup, cars in 1970). It fails catastrophically when the product is being fundamentally reinvented. The manager doesn't understand what is happening at a technical level.</div>
+        <div class="warning-fix">✓ Fix: Stay technically close to your product during any period of fundamental reinvention. Never let a manager-layer form between you and technical reality.</div>
+      </div>
+
+      <div class="warning-card">
+        <div class="warning-top">
+          <div class="warning-icon">☁️</div>
+          <div class="warning-title">The Big Gray Cloud</div>
+        </div>
+        <div class="warning-body">Every layer of management between you and your engineers distorts the truth. In a large org, the CEO eventually hears a completely filtered version of reality — polished, de-risked, and wrong. You become the least informed person in your own company.</div>
+        <div class="warning-fix">✓ Fix: Conduct direct design reviews. Skip layers regularly. Be the person who can sit with the engineer at 2am and actually help.</div>
+      </div>
+
+      <div class="warning-card">
+        <div class="warning-top">
+          <div class="warning-icon">💊</div>
+          <div class="warning-title">The External Reward Ceiling</div>
+        </div>
+        <div class="warning-body">Once you have enough money and fame, they stop working as motivation. Builders who ran purely on external rewards hit this ceiling and stop. The ones still working at 4am when they are already rich are running on something internal that has no ceiling.</div>
+        <div class="warning-fix">✓ Fix: Identify your internal motivation now, before you hit the ceiling. What would still drive you if money and status were already secured?</div>
+      </div>
+
+      <div class="warning-card">
+        <div class="warning-top">
+          <div class="warning-icon">🔒</div>
+          <div class="warning-title">The Permission Trap</div>
+        </div>
+        <div class="warning-body">Most people wait for someone to "license" them to build. They wait for validation from the corporate press, critics, investors, or the market. The shocking truth is that nobody gives this permission. The door is already open. The trap is entirely psychological.</div>
+        <div class="warning-fix">✓ Fix: Ask "what specific approval am I waiting for?" If you cannot name one real person or institution — you are already free. Start now.</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- PRINCIPLES TAB -->
+  <div class="section" id="tab-principles">
+    <div class="checklist-intro">7 permanent principles for builders</div>
+    <div class="principles-list">
+
+      <div class="principle-card">
+        <div class="principle-num">01</div>
+        <div class="principle-content">
+          <div class="principle-title">Technical Truth is Sacred</div>
+          <div class="principle-body">The leader must always be able to access the raw technical reality of their product. The moment you can no longer sit with your engineer and understand the real problem, you have lost your grip on the company.</div>
+          <div class="principle-quote">"The CEO of a layered firm is often the least informed person in the building."</div>
+        </div>
+      </div>
+
+      <div class="principle-card">
+        <div class="principle-num">02</div>
+        <div class="principle-content">
+          <div class="principle-title">The World Recalibrates Around Maximum Effort</div>
+          <div class="principle-body">Reality has give in it. The people who push hardest find that the world reorganizes itself around their effort. Most people live in a primitive version of reality because they never test its limits.</div>
+          <div class="principle-quote">"The world is far more reconfigurable than people believe."</div>
+        </div>
+      </div>
+
+      <div class="principle-card">
+        <div class="principle-num">03</div>
+        <div class="principle-content">
+          <div class="principle-title">Founders Run What They Build</div>
+          <div class="principle-body">For thousands of years, the people who built things ran them. The 100-year experiment of "professional management" is a historical anomaly that collapses under rapid technological change. Return to the original model.</div>
+          <div class="principle-quote">"Henry Ford ran Ford. This was normal for millennia."</div>
+        </div>
+      </div>
+
+      <div class="principle-card">
+        <div class="principle-num">04</div>
+        <div class="principle-content">
+          <div class="principle-title">Restock the Stream</div>
+          <div class="principle-body">Every builder has fished from a stream built by those who came before them. The duty is to push knowledge, access, and opportunity down to the next generation — not out of charity, but out of obligation to the ecosystem that created you.</div>
+          <div class="principle-quote">"Bob Noyce mentored founders because he had fished from the stream others built."</div>
+        </div>
+      </div>
+
+      <div class="principle-card">
+        <div class="principle-num">05</div>
+        <div class="principle-content">
+          <div class="principle-title">The Bottleneck is Always Findable</div>
+          <div class="principle-body">Every system has exactly one constraint slowing everything else down. It is always findable if you map the process honestly. Fix that one thing. Then find the next one. This is the entire Musk operating system.</div>
+          <div class="principle-quote">"Map your production line. Put 100% of personal energy on the single bottleneck."</div>
+        </div>
+      </div>
+
+      <div class="principle-card">
+        <div class="principle-num">06</div>
+        <div class="principle-content">
+          <div class="principle-title">Moral Panics Signal Power Shifts</div>
+          <div class="principle-body">Every new technology generates a moral panic. The panic is never really about the technology. It is about who loses power when the technology democratizes access. The bicycle panic was about women gaining mobility. The internet panic was about information control.</div>
+          <div class="principle-quote">"Bicycle face was designed to stop women from traveling to the next town."</div>
+        </div>
+      </div>
+
+      <div class="principle-card">
+        <div class="principle-num">07</div>
+        <div class="principle-content">
+          <div class="principle-title">Inventors Are Blind to Their Own Inventions</div>
+          <div class="principle-body">Edison built the phonograph for religious sermons. He was horrified when people used it for jazz. The inventor is almost always the worst person at predicting how the invention will actually be used. Build the platform. Let others find the use.</div>
+          <div class="principle-quote">"Edison thought the phonograph would be for sermons. It became jazz."</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const checked = [false, false, false, false, false];
+
+  function toggleCard(card, index) {
+    const isExpanded = card.classList.contains('expanded');
+    // Toggle expand
+    card.classList.toggle('expanded', !isExpanded);
+  }
+
+  function toggleCheck(card, index, e) {
+    e.stopPropagation();
+    checked[index] = !checked[index];
+    card.classList.toggle('checked', checked[index]);
+    updateProgress();
+  }
+
+  // Make checkbox toggle on click, card expand on body click
+  document.querySelectorAll('.check-card').forEach((card, i) => {
+    card.querySelector('.checkbox').addEventListener('click', (e) => {
+      e.stopPropagation();
+      checked[i] = !checked[i];
+      card.classList.toggle('checked', checked[i]);
+      updateProgress();
+    });
+  });
+
+  function updateProgress() {
+    const count = checked.filter(Boolean).length;
+    const pct = (count / 5) * 100;
+    document.getElementById('progressFill').style.width = pct + '%';
+    document.getElementById('progressText').textContent = count + ' / 5 checked';
+  }
+
+  function resetChecklist() {
+    checked.fill(false);
+    document.querySelectorAll('.check-card').forEach(c => {
+      c.classList.remove('checked', 'expanded');
+    });
+    updateProgress();
+  }
+
+  function showTab(name) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('tab-' + name).classList.add('active');
+    event.target.classList.add('active');
+  }
+</script>
+</body>
+</html>
