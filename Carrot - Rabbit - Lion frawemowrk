@@ -1,0 +1,384 @@
+import { useState, useEffect } from "react";
+
+const EMPTY_FORM = { name: "", lion: "", rabbit: "", carrot: "" };
+
+export default function CarrotRabbitLion() {
+  const [form, setForm] = useState(EMPTY_FORM);
+  const [sequences, setSequences] = useState([]);
+  const [revealed, setRevealed] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  const allFilled = form.lion && form.rabbit && form.carrot && form.name;
+
+  // Load from storage
+  useEffect(() => {
+    (async () => {
+      try {
+        const result = await window.storage.get("sequences");
+        if (result?.value) setSequences(JSON.parse(result.value));
+      } catch (_) {}
+      setLoading(false);
+    })();
+  }, []);
+
+  // Save to storage
+  const save = async (updated) => {
+    try {
+      await window.storage.set("sequences", JSON.stringify(updated));
+    } catch (_) {}
+  };
+
+  const handleReveal = () => {
+    if (!allFilled) return;
+    const newSeq = { id: Date.now(), ...form };
+    const updated = [newSeq, ...sequences];
+    setSequences(updated);
+    save(updated);
+    setRevealed(true);
+  };
+
+  const handleDelete = async (id) => {
+    const updated = sequences.filter((s) => s.id !== id);
+    setSequences(updated);
+    save(updated);
+  };
+
+  const handleReset = () => {
+    setForm(EMPTY_FORM);
+    setRevealed(false);
+  };
+
+  return (
+    <div style={{
+      minHeight: "100vh",
+      background: "#F8FAFF",
+      fontFamily: "'Georgia', serif",
+      padding: "48px 20px",
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+    }}>
+
+      {/* Header */}
+      <div style={{ textAlign: "center", marginBottom: "44px", maxWidth: "560px" }}>
+        <div style={{
+          display: "inline-flex",
+          alignItems: "center",
+          background: "#1B4FD8",
+          borderRadius: "100px",
+          padding: "8px 20px",
+          marginBottom: "24px",
+        }}>
+          <span style={{ color: "#FFFFFF", fontSize: "11px", letterSpacing: "2px", textTransform: "uppercase", fontWeight: "bold" }}>
+            Law of Sequencing
+          </span>
+        </div>
+
+        <h1 style={{
+          color: "#0F172A",
+          fontSize: "clamp(30px, 5vw, 44px)",
+          fontWeight: "normal",
+          lineHeight: "1.2",
+          margin: "0 0 20px",
+          letterSpacing: "-0.5px",
+        }}>
+          🥕 → 🐇 → 🦁
+        </h1>
+
+        <p style={{
+          color: "#1B4FD8",
+          fontSize: "15px",
+          lineHeight: "1.8",
+          margin: "0 0 8px",
+          fontStyle: "italic",
+        }}>
+          "Most people fail not because they lack ambition or effort. They fail because they chase everything at once — the lion, the rabbit, and the carrot — or the lion before they have the rabbit, and the rabbit before they have the carrot."
+        </p>
+
+        <p style={{ color: "#1B4FD8", fontSize: "12px", margin: "0 0 16px", letterSpacing: "0.5px" }}>
+          — Krapendra
+        </p>
+
+        <p style={{ color: "#0F172A", fontSize: "14px", lineHeight: "1.7", margin: 0, fontWeight: "500" }}>
+          Define your sequence. Start with what is within reach.
+        </p>
+      </div>
+
+      <div style={{ display: "flex", flexDirection: "column", gap: "14px", width: "100%", maxWidth: "540px" }}>
+
+        {/* Sequence Name Input */}
+        <div style={{
+          background: "#FFFFFF",
+          border: "1px solid #E8EDF5",
+          borderRadius: "14px",
+          padding: "18px 22px",
+          boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
+        }}>
+          <label style={{ color: "#0F172A", fontSize: "13px", fontWeight: "bold", display: "block", marginBottom: "8px" }}>
+            🎯 Name Your Sequence
+          </label>
+          <input
+            value={form.name}
+            onChange={(e) => setForm({ ...form, name: e.target.value })}
+            placeholder="e.g. Business, Health, Career, Relationship..."
+            style={{
+              width: "100%",
+              background: "#FAFBFF",
+              border: `1px solid ${form.name ? "#1B4FD8" : "#E2E8F0"}`,
+              borderRadius: "10px",
+              padding: "11px 13px",
+              color: "#0F172A",
+              fontSize: "14px",
+              fontFamily: "'Georgia', serif",
+              outline: "none",
+              boxSizing: "border-box",
+              transition: "border-color 0.2s ease",
+            }}
+          />
+        </div>
+
+        {/* Animal Cards */}
+        {[
+          { key: "lion", emoji: "🦁", label: "Your Lion", sublabel: "The Big Goal", description: "Your biggest goal. Currently out of reach — but worth everything.", placeholder: "e.g. Build a $1M business" },
+          { key: "rabbit", emoji: "🐇", label: "Your Rabbit", sublabel: "The Middle Goal", description: "The meaningful step toward your lion. Catching this makes the lion possible.", placeholder: "e.g. Get first 10 paying customers" },
+          { key: "carrot", emoji: "🥕", label: "Your Carrot", sublabel: "The First Move", description: "What is within your reach right now. Your only focus. Get this first — everything else becomes possible.", placeholder: "e.g. Launch a simple landing page today" },
+        ].map((animal) => (
+          <div key={animal.key} style={{
+            background: "#FFFFFF",
+            border: `1px solid ${form[animal.key] ? "rgba(27,79,216,0.3)" : "#E8EDF5"}`,
+            borderRadius: "14px",
+            padding: "22px",
+            boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
+            transition: "border-color 0.2s ease",
+          }}>
+            <div style={{ display: "flex", alignItems: "flex-start", gap: "14px" }}>
+              <div style={{ fontSize: "34px", lineHeight: 1, flexShrink: 0, marginTop: "2px" }}>{animal.emoji}</div>
+              <div style={{ flex: 1 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "8px" }}>
+                  <span style={{ color: "#1B4FD8", fontSize: "16px", fontWeight: "bold", whiteSpace: "nowrap" }}>{animal.label}</span>
+                  <span style={{ color: "#0F172A", fontSize: "14px", whiteSpace: "nowrap" }}>— {animal.sublabel}</span>
+                </div>
+                <p style={{ color: "#0F172A", fontSize: "13px", lineHeight: "1.6", margin: "0 0 12px" }}>{animal.description}</p>
+                <textarea
+                  value={form[animal.key]}
+                  onChange={(e) => setForm({ ...form, [animal.key]: e.target.value })}
+                  placeholder={animal.placeholder}
+                  rows={2}
+                  style={{
+                    width: "100%",
+                    background: "#FAFBFF",
+                    border: `1px solid ${form[animal.key] ? "#1B4FD8" : "#E2E8F0"}`,
+                    borderRadius: "10px",
+                    padding: "11px 13px",
+                    color: "#0F172A",
+                    fontSize: "14px",
+                    fontFamily: "'Georgia', serif",
+                    lineHeight: "1.6",
+                    resize: "none",
+                    outline: "none",
+                    boxSizing: "border-box",
+                    transition: "border-color 0.2s ease",
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+        ))}
+
+        {/* Sequence Visual */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "10px", padding: "10px", fontSize: "13px" }}>
+          <span style={{ color: "#1B4FD8" }}>🥕 Carrot</span>
+          <span style={{ color: "#CBD5E1" }}>→</span>
+          <span style={{ color: "#1B4FD8" }}>🐇 Rabbit</span>
+          <span style={{ color: "#CBD5E1" }}>→</span>
+          <span style={{ color: "#1B4FD8" }}>🦁 Lion</span>
+        </div>
+
+        {/* Reveal Button */}
+        <button
+          onClick={handleReveal}
+          style={{
+            width: "100%",
+            padding: "17px",
+            background: allFilled ? "#1B4FD8" : "#F1F5F9",
+            border: "none",
+            borderRadius: "12px",
+            color: allFilled ? "#FFFFFF" : "#0F172A",
+            fontSize: "15px",
+            fontFamily: "'Georgia', serif",
+            cursor: allFilled ? "pointer" : "not-allowed",
+            transition: "all 0.3s ease",
+            letterSpacing: "0.5px",
+            fontWeight: allFilled ? "normal" : "500",
+            boxShadow: allFilled ? "0 4px 20px rgba(27,79,216,0.25)" : "none",
+          }}
+        >
+          {allFilled ? "Reveal My Sequence →" : "Fill all fields to reveal your sequence"}
+
+        </button>
+
+        {/* Latest Result */}
+        {revealed && (
+          <div style={{
+            background: "#1B4FD8",
+            borderRadius: "16px",
+            padding: "28px",
+            animation: "fadeIn 0.5s ease",
+          }}>
+            <p style={{ color: "#FFFFFF", fontSize: "13px", letterSpacing: "0.5px", margin: "0 0 4px" }}>
+              Your Sequence
+            </p>
+            <p style={{ color: "#FFFFFF", fontSize: "16px", fontWeight: "bold", margin: "0 0 20px" }}>
+              {form.name}
+            </p>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+              {[
+                { emoji: "🥕", label: "Start Here", value: form.carrot },
+                { arrow: true },
+                { emoji: "🐇", label: "Then This", value: form.rabbit },
+                { arrow: true },
+                { emoji: "🦁", label: "Then This", value: form.lion },
+              ].map((item, i) =>
+                item.arrow ? (
+                  <div key={i} style={{ color: "#FFFFFF", fontSize: "20px", paddingLeft: "8px" }}>↓</div>
+                ) : (
+                  <div key={i} style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                    <span style={{ fontSize: "22px" }}>{item.emoji}</span>
+                    <div>
+                      <span style={{ color: "rgba(255,255,255,0.9)", fontSize: "13px", letterSpacing: "0.5px", fontWeight: "normal" }}>
+                        {item.label}
+                      </span>
+                      <p style={{ color: "#FFFFFF", fontSize: "15px", margin: "2px 0 0", lineHeight: "1.5" }}>{item.value}</p>
+                    </div>
+                  </div>
+                )
+              )}
+            </div>
+
+            <div style={{ marginTop: "24px", paddingTop: "20px", borderTop: "1px solid rgba(255,255,255,0.15)" }}>
+              <p style={{ color: "rgba(255,255,255,0.8)", fontSize: "13px", lineHeight: "1.8", margin: 0, fontStyle: "italic" }}>
+                "Don't chase the lion yet. Don't chase the rabbit yet. Your only job right now is to get your carrot. Everything else becomes possible after that."
+              </p>
+              <p style={{ color: "#FFFFFF", fontSize: "12px", margin: "8px 0 0", fontWeight: "bold" }}>— Krapendra</p>
+            </div>
+
+            <button
+              onClick={handleReset}
+              style={{
+                marginTop: "16px",
+                padding: "10px 20px",
+                background: "rgba(255,255,255,0.15)",
+                border: "1px solid rgba(255,255,255,0.3)",
+                borderRadius: "8px",
+                color: "#FFFFFF",
+                fontSize: "13px",
+                fontFamily: "'Georgia', serif",
+                cursor: "pointer",
+                letterSpacing: "0.5px",
+              }}
+            >
+              + Add Another Sequence
+            </button>
+          </div>
+        )}
+
+        {/* Saved Sequences */}
+        {!loading && sequences.length > 0 && (
+          <div style={{ marginTop: "8px" }}>
+            <p style={{ color: "#0F172A", fontSize: "13px", fontWeight: "bold", margin: "0 0 12px" }}>
+              Your Saved Sequences
+            </p>
+            <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+              {sequences.map((seq) => (
+                <div key={seq.id} style={{
+                  background: "#FFFFFF",
+                  border: "1px solid #E8EDF5",
+                  borderRadius: "14px",
+                  padding: "20px",
+                  boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
+                }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "14px" }}>
+                    <span style={{ color: "#1B4FD8", fontSize: "15px", fontWeight: "bold" }}>🎯 {seq.name}</span>
+                    <button
+                      onClick={() => handleDelete(seq.id)}
+                      style={{
+                        background: "rgba(239,68,68,0.08)",
+                        border: "1px solid rgba(239,68,68,0.2)",
+                        borderRadius: "6px",
+                        color: "#EF4444",
+                        fontSize: "12px",
+                        padding: "4px 10px",
+                        cursor: "pointer",
+                        fontFamily: "'Georgia', serif",
+                      }}
+                    >
+                      Delete
+                    </button>
+                  </div>
+
+                  <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                    {[
+                      { emoji: "🥕", label: "Start Here", value: seq.carrot },
+                      { arrow: true },
+                      { emoji: "🐇", label: "Then This", value: seq.rabbit },
+                      { arrow: true },
+                      { emoji: "🦁", label: "Then This", value: seq.lion },
+                    ].map((item, i) =>
+                      item.arrow ? (
+                        <div key={i} style={{ color: "#CBD5E1", fontSize: "16px", paddingLeft: "6px" }}>↓</div>
+                      ) : (
+                        <div key={i} style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                          <span style={{ fontSize: "18px" }}>{item.emoji}</span>
+                          <div>
+                            <span style={{ color: "#1B4FD8", fontSize: "13px", letterSpacing: "0.5px", fontWeight: "normal" }}>
+                              {item.label}
+                            </span>
+                            <p style={{ color: "#0F172A", fontSize: "14px", margin: "1px 0 0", lineHeight: "1.4" }}>{item.value}</p>
+                          </div>
+                        </div>
+                      )
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Footer */}
+        <div style={{ marginTop: "28px", paddingTop: "24px", borderTop: "1px solid #E8EDF5", textAlign: "center" }}>
+          <p style={{ color: "#0F172A", fontSize: "14px", fontWeight: "bold", margin: "0 0 6px" }}>Built by Krapendra 🧠</p>
+          <p style={{ color: "#0F172A", fontSize: "13px", lineHeight: "1.7", margin: "0 0 16px" }}>
+            Sharing insights on Wisdom, Wealth, and Power — for a well-lived life.
+          </p>
+          <div style={{ display: "flex", gap: "10px", justifyContent: "center", flexWrap: "wrap" }}>
+            <a href="https://www.linkedin.com/in/krapendrachandel?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app" target="_blank" rel="noreferrer" style={{
+              padding: "9px 18px", background: "#1B4FD8", color: "#FFFFFF", borderRadius: "8px",
+              fontSize: "12px", textDecoration: "none", letterSpacing: "0.5px",
+              boxShadow: "0 4px 12px rgba(27,79,216,0.3)",
+            }}>
+              Follow on LinkedIn →
+            </a>
+            <a href="https://krapendrajournal.beehiiv.com" target="_blank" rel="noreferrer" style={{
+              padding: "9px 18px", background: "#0F172A", color: "#FFFFFF", borderRadius: "8px",
+              fontSize: "12px", textDecoration: "none", letterSpacing: "0.5px",
+              boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+            }}>
+              Subscribe My Newsletter →
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <style>{`
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        textarea::placeholder { color: #CBD5E1; }
+        textarea:focus { outline: none; }
+        input::placeholder { color: #CBD5E1; }
+        input:focus { outline: none; }
+        * { text-transform: none !important; }
+      `}</style>
+    </div>
+  );
+}
