@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Carrot → Rabbit → Lion | Krapendra</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; text-transform: none !important; }
+
+  body {
+    min-height: 100vh;
+    background: #F8FAFF;
+    font-family: 'Georgia', serif;
+    padding: 48px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  /* HEADER */
+  .header {
+    text-align: center;
+    margin-bottom: 44px;
+    max-width: 560px;
+  }
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    background: #1B4FD8;
+    border-radius: 100px;
+    padding: 8px 20px;
+    margin-bottom: 24px;
+  }
+  .badge span {
+    color: #fff;
+    font-size: 11px;
+    letter-spacing: 2px;
+    font-weight: bold;
+    font-family: Georgia, serif;
+  }
+  .main-emoji {
+    color: #0F172A;
+    font-size: clamp(30px, 5vw, 44px);
+    font-weight: normal;
+    line-height: 1.2;
+    margin: 0 0 20px;
+    letter-spacing: -0.5px;
+  }
+  .quote {
+    color: #1B4FD8;
+    font-size: 15px;
+    line-height: 1.8;
+    margin: 0 0 8px;
+    font-style: italic;
+  }
+  .author {
+    color: #1B4FD8;
+    font-size: 12px;
+    margin: 0 0 16px;
+    letter-spacing: 0.5px;
+  }
+  .tagline {
+    color: #0F172A;
+    font-size: 14px;
+    line-height: 1.7;
+    margin: 0;
+    font-weight: 500;
+  }
+
+  /* FORM CONTAINER */
+  .form-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    width: 100%;
+    max-width: 540px;
+  }
+
+  /* CARDS */
+  .card {
+    background: #fff;
+    border: 1px solid #E8EDF5;
+    border-radius: 14px;
+    padding: 18px 22px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    transition: border-color 0.2s ease;
+  }
+  .card.filled { border-color: rgba(27,79,216,0.3); }
+
+  .card-label {
+    color: #0F172A;
+    font-size: 13px;
+    font-weight: bold;
+    display: block;
+    margin-bottom: 8px;
+  }
+
+  /* INPUTS */
+  input, textarea {
+    width: 100%;
+    background: #FAFBFF;
+    border: 1px solid #E2E8F0;
+    border-radius: 10px;
+    padding: 11px 13px;
+    color: #0F172A;
+    font-size: 14px;
+    font-family: Georgia, serif;
+    outline: none;
+    box-sizing: border-box;
+    transition: border-color 0.2s ease;
+  }
+  input:focus, textarea:focus { border-color: #1B4FD8; }
+  input.has-value, textarea.has-value { border-color: #1B4FD8; }
+  input::placeholder, textarea::placeholder { color: #CBD5E1; }
+  textarea { resize: none; line-height: 1.6; }
+
+  /* ANIMAL CARD */
+  .animal-card {
+    background: #fff;
+    border: 1px solid #E8EDF5;
+    border-radius: 14px;
+    padding: 22px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    transition: border-color 0.2s ease;
+  }
+  .animal-card.filled { border-color: rgba(27,79,216,0.3); }
+  .animal-inner { display: flex; align-items: flex-start; gap: 14px; }
+  .animal-emoji { font-size: 34px; line-height: 1; flex-shrink: 0; margin-top: 2px; }
+  .animal-content { flex: 1; }
+  .animal-title { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; }
+  .animal-name { color: #1B4FD8; font-size: 16px; font-weight: bold; white-space: nowrap; }
+  .animal-sub { color: #0F172A; font-size: 14px; white-space: nowrap; }
+  .animal-desc { color: #0F172A; font-size: 13px; line-height: 1.6; margin: 0 0 12px; }
+
+  /* SEQUENCE VISUAL */
+  .seq-visual {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 14px;
+    background: #F8FAFF;
+    border-radius: 12px;
+    border: 1px solid #E8EDF5;
+  }
+  .seq-step { text-align: center; }
+  .seq-emoji { font-size: 22px; display: block; margin-bottom: 2px; }
+  .seq-lbl { color: #1B4FD8; font-size: 10px; letter-spacing: 1px; font-weight: bold; }
+  .seq-arrow { color: #CBD5E1; font-size: 18px; }
+
+  /* BUTTON */
+  .reveal-btn {
+    width: 100%;
+    padding: 17px;
+    background: #F1F5F9;
+    border: none;
+    border-radius: 12px;
+    color: #0F172A;
+    font-size: 15px;
+    font-family: Georgia, serif;
+    cursor: not-allowed;
+    transition: all 0.3s ease;
+    letter-spacing: 0.5px;
+    font-weight: 500;
+  }
+  .reveal-btn.ready {
+    background: #1B4FD8;
+    color: #fff;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(27,79,216,0.25);
+    font-weight: normal;
+  }
+  .reveal-btn.ready:hover { background: #1540b0; }
+
+  /* RESULT CARD */
+  .result-card {
+    background: #1B4FD8;
+    border-radius: 16px;
+    padding: 28px;
+    animation: fadeIn 0.5s ease;
+    display: none;
+  }
+  .result-card.visible { display: block; }
+  .result-label { color: #fff; font-size: 13px; letter-spacing: 0.5px; margin: 0 0 4px; }
+  .result-name { color: #fff; font-size: 16px; font-weight: bold; margin: 0 0 20px; }
+  .result-steps { display: flex; flex-direction: column; gap: 8px; }
+  .result-step { display: flex; align-items: center; gap: 12px; }
+  .result-step-emoji { font-size: 22px; }
+  .result-step-label { color: rgba(255,255,255,0.9); font-size: 13px; letter-spacing: 0.5px; }
+  .result-step-value { color: #fff; font-size: 15px; margin: 2px 0 0; line-height: 1.5; }
+  .result-arrow { color: #fff; font-size: 20px; padding-left: 8px; }
+  .result-divider { margin-top: 24px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.15); }
+  .result-quote { color: rgba(255,255,255,0.8); font-size: 13px; line-height: 1.8; margin: 0; font-style: italic; }
+  .result-author { color: #fff; font-size: 12px; margin: 8px 0 0; font-weight: bold; }
+
+  .reset-btn {
+    margin-top: 16px;
+    padding: 10px 20px;
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 8px;
+    color: #fff;
+    font-size: 13px;
+    font-family: Georgia, serif;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+  }
+  .reset-btn:hover { background: rgba(255,255,255,0.25); }
+
+  /* SAVED SEQUENCES */
+  .saved-section { margin-top: 8px; }
+  .saved-title { color: #0F172A; font-size: 13px; font-weight: bold; margin: 0 0 12px; }
+  .saved-list { display: flex; flex-direction: column; gap: 12px; }
+
+  .saved-card {
+    background: #fff;
+    border: 1px solid #E8EDF5;
+    border-radius: 14px;
+    padding: 20px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  }
+  .saved-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+  }
+  .saved-card-name { color: #1B4FD8; font-size: 15px; font-weight: bold; }
+  .delete-btn {
+    background: rgba(239,68,68,0.08);
+    border: 1px solid rgba(239,68,68,0.2);
+    border-radius: 6px;
+    color: #EF4444;
+    font-size: 12px;
+    padding: 4px 10px;
+    cursor: pointer;
+    font-family: Georgia, serif;
+  }
+  .delete-btn:hover { background: rgba(239,68,68,0.15); }
+
+  .saved-steps { display: flex; flex-direction: column; gap: 6px; }
+  .saved-step { display: flex; align-items: center; gap: 10px; }
+  .saved-step-emoji { font-size: 18px; }
+  .saved-step-label { color: #1B4FD8; font-size: 13px; letter-spacing: 0.5px; }
+  .saved-step-value { color: #0F172A; font-size: 14px; margin: 1px 0 0; line-height: 1.4; }
+  .saved-arrow { color: #CBD5E1; font-size: 16px; padding-left: 6px; }
+
+  /* FOOTER */
+  .footer {
+    margin-top: 28px;
+    padding-top: 24px;
+    border-top: 1px solid #E8EDF5;
+    text-align: center;
+    width: 100%;
+    max-width: 540px;
+  }
+  .footer-name { color: #0F172A; font-size: 14px; font-weight: bold; margin: 0 0 6px; }
+  .footer-desc { color: #0F172A; font-size: 13px; line-height: 1.7; margin: 0 0 16px; }
+  .footer-links { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+  .footer-link {
+    padding: 9px 18px;
+    border-radius: 8px;
+    font-size: 12px;
+    text-decoration: none;
+    letter-spacing: 0.5px;
+    font-family: Georgia, serif;
+  }
+  .footer-link.blue { background: #1B4FD8; color: #fff; box-shadow: 0 4px 12px rgba(27,79,216,0.3); }
+  .footer-link.dark { background: #0F172A; color: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="badge"><span>Law of Sequencing</span></div>
+  <h1 class="main-emoji">🥕 → 🐇 → 🦁</h1>
+  <p class="quote">"Most people fail not because they lack ambition or effort. They fail because they chase everything at once — the lion, the rabbit, and the carrot — or the lion before they have the rabbit, and the rabbit before they have the carrot."</p>
+  <p class="author">— Krapendra</p>
+  <p class="tagline">Define your sequence. Start with what is within reach.</p>
+</div>
+
+<div class="form-wrap">
+
+  <!-- NAME INPUT -->
+  <div class="card" id="nameCard">
+    <label class="card-label">🎯 Name Your Sequence</label>
+    <input type="text" id="nameInput" placeholder="e.g. Business, Health, Career, Relationship..." oninput="handleInput()" />
+  </div>
+
+  <!-- LION -->
+  <div class="animal-card" id="lionCard">
+    <div class="animal-inner">
+      <div class="animal-emoji">🦁</div>
+      <div class="animal-content">
+        <div class="animal-title">
+          <span class="animal-name">Your Lion</span>
+          <span class="animal-sub">— The Big Goal</span>
+        </div>
+        <p class="animal-desc">Your biggest goal. Currently out of reach — but worth everything.</p>
+        <textarea id="lionInput" rows="2" placeholder="e.g. Build a $1M business" oninput="handleInput()"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- RABBIT -->
+  <div class="animal-card" id="rabbitCard">
+    <div class="animal-inner">
+      <div class="animal-emoji">🐇</div>
+      <div class="animal-content">
+        <div class="animal-title">
+          <span class="animal-name">Your Rabbit</span>
+          <span class="animal-sub">— The Middle Goal</span>
+        </div>
+        <p class="animal-desc">The meaningful step toward your lion. Catching this makes the lion possible.</p>
+        <textarea id="rabbitInput" rows="2" placeholder="e.g. Get first 10 paying customers" oninput="handleInput()"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- CARROT -->
+  <div class="animal-card" id="carrotCard">
+    <div class="animal-inner">
+      <div class="animal-emoji">🥕</div>
+      <div class="animal-content">
+        <div class="animal-title">
+          <span class="animal-name">Your Carrot</span>
+          <span class="animal-sub">— The First Move</span>
+        </div>
+        <p class="animal-desc">What is within your reach right now. Your only focus. Get this first — everything else becomes possible.</p>
+        <textarea id="carrotInput" rows="2" placeholder="e.g. Launch a simple landing page today" oninput="handleInput()"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- SEQUENCE VISUAL -->
+  <div class="seq-visual">
+    <div class="seq-step">
+      <span class="seq-emoji">🥕</span>
+      <span class="seq-lbl">CARROT</span>
+    </div>
+    <span class="seq-arrow">→</span>
+    <div class="seq-step">
+      <span class="seq-emoji">🐇</span>
+      <span class="seq-lbl">RABBIT</span>
+    </div>
+    <span class="seq-arrow">→</span>
+    <div class="seq-step">
+      <span class="seq-emoji">🦁</span>
+      <span class="seq-lbl">LION</span>
+    </div>
+  </div>
+
+  <!-- REVEAL BUTTON -->
+  <button class="reveal-btn" id="revealBtn" onclick="handleReveal()">
+    Fill all fields to reveal your sequence
+  </button>
+
+  <!-- RESULT -->
+  <div class="result-card" id="resultCard">
+    <p class="result-label">Your Sequence</p>
+    <p class="result-name" id="resultName"></p>
+    <div class="result-steps" id="resultSteps"></div>
+    <div class="result-divider">
+      <p class="result-quote">"Don't chase the lion yet. Don't chase the rabbit yet. Your only job right now is to get your carrot. Everything else becomes possible after that."</p>
+      <p class="result-author">— Krapendra</p>
+    </div>
+    <button class="reset-btn" onclick="handleReset()">+ Add Another Sequence</button>
+  </div>
+
+  <!-- SAVED SEQUENCES -->
+  <div class="saved-section" id="savedSection" style="display:none;">
+    <p class="saved-title">Your Saved Sequences</p>
+    <div class="saved-list" id="savedList"></div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <p class="footer-name">Built by Krapendra 🧠</p>
+    <p class="footer-desc">Sharing insights on Wisdom, Wealth, and Power — for a well-lived life.</p>
+    <div class="footer-links">
+      <a class="footer-link blue" href="https://www.linkedin.com/in/krapendrachandel?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app" target="_blank">Follow on LinkedIn →</a>
+      <a class="footer-link dark" href="https://krapendrajournal.beehiiv.com" target="_blank">Subscribe My Newsletter →</a>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const STORAGE_KEY = 'crl_sequences';
+  let sequences = [];
+  let revealed = false;
+
+  // LOAD from localStorage on page open
+  function loadData() {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) sequences = JSON.parse(saved);
+    } catch(e) { sequences = []; }
+    renderSaved();
+  }
+
+  // SAVE to localStorage
+  function saveData() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(sequences));
+    } catch(e) {}
+  }
+
+  // Handle input changes
+  function handleInput() {
+    const name = document.getElementById('nameInput').value.trim();
+    const lion = document.getElementById('lionInput').value.trim();
+    const rabbit = document.getElementById('rabbitInput').value.trim();
+    const carrot = document.getElementById('carrotInput').value.trim();
+
+    // Update card borders
+    document.getElementById('nameCard').classList.toggle('filled', !!name);
+    document.getElementById('lionCard').classList.toggle('filled', !!lion);
+    document.getElementById('rabbitCard').classList.toggle('filled', !!rabbit);
+    document.getElementById('carrotCard').classList.toggle('filled', !!carrot);
+
+    // Update input borders
+    document.getElementById('nameInput').classList.toggle('has-value', !!name);
+    document.getElementById('lionInput').classList.toggle('has-value', !!lion);
+    document.getElementById('rabbitInput').classList.toggle('has-value', !!rabbit);
+    document.getElementById('carrotInput').classList.toggle('has-value', !!carrot);
+
+    const allFilled = name && lion && rabbit && carrot;
+    const btn = document.getElementById('revealBtn');
+    btn.classList.toggle('ready', allFilled);
+    btn.style.cursor = allFilled ? 'pointer' : 'not-allowed';
+    btn.textContent = allFilled ? 'Reveal My Sequence →' : 'Fill all fields to reveal your sequence';
+  }
+
+  // Reveal sequence
+  function handleReveal() {
+    const name = document.getElementById('nameInput').value.trim();
+    const lion = document.getElementById('lionInput').value.trim();
+    const rabbit = document.getElementById('rabbitInput').value.trim();
+    const carrot = document.getElementById('carrotInput').value.trim();
+    if (!name || !lion || !rabbit || !carrot) return;
+
+    const newSeq = { id: Date.now(), name, lion, rabbit, carrot };
+    sequences = [newSeq, ...sequences];
+    saveData();
+    revealed = true;
+
+    // Show result
+    document.getElementById('resultName').textContent = name;
+    document.getElementById('resultSteps').innerHTML = `
+      <div class="result-step">
+        <span class="result-step-emoji">🥕</span>
+        <div><div class="result-step-label">Start Here</div><p class="result-step-value">${carrot}</p></div>
+      </div>
+      <div class="result-arrow">↓</div>
+      <div class="result-step">
+        <span class="result-step-emoji">🐇</span>
+        <div><div class="result-step-label">Then This</div><p class="result-step-value">${rabbit}</p></div>
+      </div>
+      <div class="result-arrow">↓</div>
+      <div class="result-step">
+        <span class="result-step-emoji">🦁</span>
+        <div><div class="result-step-label">Then This</div><p class="result-step-value">${lion}</p></div>
+      </div>
+    `;
+    document.getElementById('resultCard').classList.add('visible');
+    renderSaved();
+  }
+
+  // Reset form
+  function handleReset() {
+    document.getElementById('nameInput').value = '';
+    document.getElementById('lionInput').value = '';
+    document.getElementById('rabbitInput').value = '';
+    document.getElementById('carrotInput').value = '';
+    document.getElementById('resultCard').classList.remove('visible');
+    revealed = false;
+    handleInput();
+  }
+
+  // Delete a sequence
+  function handleDelete(id) {
+    sequences = sequences.filter(s => s.id !== id);
+    saveData();
+    renderSaved();
+  }
+
+  // Render saved sequences
+  function renderSaved() {
+    const section = document.getElementById('savedSection');
+    const list = document.getElementById('savedList');
+    if (sequences.length === 0) { section.style.display = 'none'; return; }
+    section.style.display = 'block';
+    list.innerHTML = sequences.map(seq => `
+      <div class="saved-card">
+        <div class="saved-card-header">
+          <span class="saved-card-name">🎯 ${seq.name}</span>
+          <button class="delete-btn" onclick="handleDelete(${seq.id})">Delete</button>
+        </div>
+        <div class="saved-steps">
+          <div class="saved-step">
+            <span class="saved-step-emoji">🥕</span>
+            <div><div class="saved-step-label">Start Here</div><p class="saved-step-value">${seq.carrot}</p></div>
+          </div>
+          <div class="saved-arrow">↓</div>
+          <div class="saved-step">
+            <span class="saved-step-emoji">🐇</span>
+            <div><div class="saved-step-label">Then This</div><p class="saved-step-value">${seq.rabbit}</p></div>
+          </div>
+          <div class="saved-arrow">↓</div>
+          <div class="saved-step">
+            <span class="saved-step-emoji">🦁</span>
+            <div><div class="saved-step-label">Then This</div><p class="saved-step-value">${seq.lion}</p></div>
+          </div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  // Load on start
+  loadData();
+</script>
+</body>
+</html>
