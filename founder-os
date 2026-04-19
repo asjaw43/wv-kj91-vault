@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Founder Operating Framework | Krapendra</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #FAFAFA;
+    font-family: 'Georgia', serif;
+    color: #0F172A;
+    min-height: 100vh;
+    padding: 48px 20px 80px;
+  }
+
+  .wrap {
+    max-width: 560px;
+    margin: 0 auto;
+  }
+
+  /* HEADER */
+  .header {
+    text-align: center;
+    margin-bottom: 48px;
+  }
+  .badge {
+    display: inline-block;
+    background: #0F172A;
+    color: #fff;
+    font-size: 10px;
+    letter-spacing: 2.5px;
+    padding: 6px 16px;
+    border-radius: 100px;
+    margin-bottom: 24px;
+    font-family: Georgia, serif;
+  }
+  .title {
+    font-size: clamp(28px, 5vw, 40px);
+    font-weight: normal;
+    line-height: 1.2;
+    margin-bottom: 16px;
+    letter-spacing: -0.5px;
+  }
+  .subtitle {
+    font-size: 15px;
+    color: #64748B;
+    line-height: 1.7;
+    font-style: italic;
+    margin-bottom: 8px;
+  }
+
+  /* PROGRESS */
+  .progress-wrap {
+    margin: 32px 0;
+    background: #E2E8F0;
+    border-radius: 100px;
+    height: 4px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: #0F172A;
+    border-radius: 100px;
+    width: 0%;
+    transition: width 0.5s ease;
+  }
+  .progress-label {
+    text-align: center;
+    font-size: 12px;
+    color: #94A3B8;
+    margin-top: 8px;
+    letter-spacing: 1px;
+    font-family: Georgia, serif;
+  }
+
+  /* STEP CARDS */
+  .steps { display: flex; flex-direction: column; gap: 12px; margin-bottom: 32px; }
+
+  .step-card {
+    background: #fff;
+    border: 1px solid #E2E8F0;
+    border-radius: 12px;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+  .step-card.active { border-color: var(--step-color); }
+  .step-card.done { border-color: var(--step-color); background: #FAFFFE; }
+
+  .step-top {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 20px 22px;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .step-number {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 2px solid var(--step-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    color: var(--step-color);
+    flex-shrink: 0;
+    transition: all 0.2s;
+    font-family: Georgia, serif;
+  }
+  .step-card.done .step-number {
+    background: var(--step-color);
+    color: #fff;
+  }
+
+  .step-info { flex: 1; }
+  .step-name {
+    font-size: 17px;
+    font-weight: bold;
+    color: #0F172A;
+    margin-bottom: 2px;
+  }
+  .step-tagline {
+    font-size: 13px;
+    color: #94A3B8;
+    font-style: italic;
+  }
+
+  .step-check {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 2px solid #E2E8F0;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    color: #fff;
+    transition: all 0.2s;
+    cursor: pointer;
+  }
+  .step-card.done .step-check {
+    background: var(--step-color);
+    border-color: var(--step-color);
+  }
+
+  /* EXPANDED CONTENT */
+  .step-body {
+    padding: 0 22px 20px 74px;
+    display: none;
+  }
+  .step-card.active .step-body,
+  .step-card.done .step-body { display: block; }
+
+  .step-desc {
+    font-size: 14px;
+    line-height: 1.75;
+    color: #475569;
+    margin-bottom: 16px;
+  }
+
+  .step-input-label {
+    font-size: 12px;
+    color: #94A3B8;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+    font-family: Georgia, serif;
+  }
+
+  textarea {
+    width: 100%;
+    background: #F8FAFC;
+    border: 1px solid #E2E8F0;
+    border-radius: 8px;
+    padding: 12px 14px;
+    font-size: 14px;
+    font-family: Georgia, serif;
+    color: #0F172A;
+    resize: none;
+    outline: none;
+    line-height: 1.6;
+    transition: border-color 0.2s;
+  }
+  textarea:focus { border-color: var(--step-color); }
+  textarea::placeholder { color: #CBD5E1; }
+
+  .mark-btn {
+    margin-top: 12px;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    font-size: 13px;
+    font-family: Georgia, serif;
+    cursor: pointer;
+    background: var(--step-color);
+    color: #fff;
+    transition: opacity 0.2s;
+    letter-spacing: 0.3px;
+  }
+  .mark-btn:hover { opacity: 0.85; }
+  .unmark-btn {
+    margin-top: 12px;
+    margin-left: 8px;
+    padding: 10px 20px;
+    border: 1px solid #E2E8F0;
+    border-radius: 8px;
+    font-size: 13px;
+    font-family: Georgia, serif;
+    cursor: pointer;
+    background: #fff;
+    color: #94A3B8;
+    transition: all 0.2s;
+  }
+  .unmark-btn:hover { border-color: #94A3B8; color: #64748B; }
+
+  /* CLOSING LINE */
+  .closing {
+    text-align: center;
+    padding: 28px;
+    background: #fff;
+    border: 1px solid #E2E8F0;
+    border-radius: 12px;
+    margin-bottom: 32px;
+  }
+  .closing-line {
+    font-size: 15px;
+    font-style: italic;
+    color: #475569;
+    line-height: 1.7;
+  }
+  .closing-steps {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 16px;
+    flex-wrap: wrap;
+  }
+  .closing-step {
+    font-size: 12px;
+    padding: 4px 12px;
+    border-radius: 100px;
+    border: 1px solid #E2E8F0;
+    color: #94A3B8;
+    transition: all 0.3s;
+  }
+  .closing-step.done {
+    border-color: var(--c);
+    color: var(--c);
+    background: color-mix(in srgb, var(--c) 8%, white);
+  }
+
+  /* SAVED REFLECTIONS */
+  .saved-section { margin-top: 8px; }
+  .saved-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+  .saved-title { font-size: 14px; font-weight: bold; color: #0F172A; }
+  .clear-btn {
+    font-size: 12px;
+    color: #EF4444;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: Georgia, serif;
+    padding: 4px 8px;
+  }
+
+  .saved-list { display: flex; flex-direction: column; gap: 12px; }
+
+  .saved-card {
+    background: #fff;
+    border: 1px solid #E2E8F0;
+    border-radius: 12px;
+    padding: 18px 20px;
+  }
+  .saved-card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+  .saved-date { font-size: 11px; color: #94A3B8; letter-spacing: 1px; }
+  .saved-delete {
+    font-size: 11px;
+    color: #EF4444;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: Georgia, serif;
+  }
+  .saved-steps-list { display: flex; flex-direction: column; gap: 8px; }
+  .saved-step-row { display: flex; gap: 10px; align-items: flex-start; }
+  .saved-step-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    margin-top: 6px;
+    flex-shrink: 0;
+  }
+  .saved-step-name { font-size: 12px; font-weight: bold; color: #0F172A; margin-bottom: 2px; }
+  .saved-step-note { font-size: 13px; color: #64748B; font-style: italic; line-height: 1.5; }
+
+  /* FOOTER */
+  .footer {
+    margin-top: 40px;
+    padding-top: 24px;
+    border-top: 1px solid #E2E8F0;
+    text-align: center;
+  }
+  .footer-name { font-size: 14px; font-weight: bold; margin-bottom: 6px; }
+  .footer-desc { font-size: 13px; color: #64748B; line-height: 1.7; margin-bottom: 16px; }
+  .footer-links { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+  .footer-link {
+    padding: 9px 18px;
+    border-radius: 8px;
+    font-size: 12px;
+    text-decoration: none;
+    font-family: Georgia, serif;
+    letter-spacing: 0.3px;
+  }
+  .footer-link.dark { background: #0F172A; color: #fff; }
+  .footer-link.outline { border: 1px solid #E2E8F0; color: #475569; }
+  .footer-link.outline:hover { border-color: #0F172A; color: #0F172A; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="badge">Founder Operating Framework</div>
+    <h1 class="title">Most founders fail not because<br>they can't build.</h1>
+    <p class="subtitle">They fail because they skip steps.</p>
+    <p class="subtitle" style="font-style:normal; font-size:14px; color:#94A3B8;">Track where you are. Be honest. Move forward.</p>
+
+    <div class="progress-wrap">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+    <div class="progress-label" id="progressLabel">0 OF 4 STEPS MASTERED</div>
+  </div>
+
+  <!-- STEPS -->
+  <div class="steps">
+
+    <!-- STEP 1 -->
+    <div class="step-card" id="card-0" style="--step-color: #2563EB;" onclick="toggleCard(0)">
+      <div class="step-top">
+        <div class="step-number">1</div>
+        <div class="step-info">
+          <div class="step-name">Clarity</div>
+          <div class="step-tagline">See what others can't see yet</div>
+        </div>
+        <div class="step-check" id="check-0" onclick="event.stopPropagation(); toggleDone(0)">✓</div>
+      </div>
+      <div class="step-body">
+        <p class="step-desc">Before anything else, you need to see what others can't see yet. Your idea, your path, your product — it must make rational sense to you first. If you can't defend it to yourself, you can't convince anyone else. Clarity is your foundation. Everything builds on this.</p>
+        <div class="step-input-label">WHERE ARE YOU ON CLARITY RIGHT NOW?</div>
+        <textarea id="note-0" rows="3" placeholder="What is clear? What is still foggy? Be honest." oninput="saveNote(0)"></textarea>
+        <button class="mark-btn" onclick="event.stopPropagation(); toggleDone(0)">Mark as Mastered</button>
+      </div>
+    </div>
+
+    <!-- STEP 2 -->
+    <div class="step-card" id="card-1" style="--step-color: #7C3AED;" onclick="toggleCard(1)">
+      <div class="step-top">
+        <div class="step-number">2</div>
+        <div class="step-info">
+          <div class="step-name">Evangelism</div>
+          <div class="step-tagline">Transfer clarity into other minds</div>
+        </div>
+        <div class="step-check" id="check-1" onclick="event.stopPropagation(); toggleDone(1)">✓</div>
+      </div>
+      <div class="step-body">
+        <p class="step-desc">Now transfer that clarity into other people's minds. This is the art of communication — telling your story repeatedly, loudly, and to as many people as possible until they see what you see. No one is waiting for your product. You create the need. You make it obvious. This is your most important ongoing job as a founder.</p>
+        <div class="step-input-label">HOW ARE YOU SPREADING YOUR VISION?</div>
+        <textarea id="note-1" rows="3" placeholder="Who have you told? Where are you showing up? What is working?" oninput="saveNote(1)"></textarea>
+        <button class="mark-btn" onclick="event.stopPropagation(); toggleDone(1)">Mark as Mastered</button>
+      </div>
+    </div>
+
+    <!-- STEP 3 -->
+    <div class="step-card" id="card-2" style="--step-color: #059669;" onclick="toggleCard(2)">
+      <div class="step-top">
+        <div class="step-number">3</div>
+        <div class="step-info">
+          <div class="step-name">Execution</div>
+          <div class="step-tagline">Turn vision into reality</div>
+        </div>
+        <div class="step-check" id="check-2" onclick="event.stopPropagation(); toggleDone(2)">✓</div>
+      </div>
+      <div class="step-body">
+        <p class="step-desc">Now build it. Ship it. Show up every day and get it done. Execution is turning vision into reality through consistent action. Most people think this is the founder's only job. It's actually the third step — and it only works when clarity and evangelism are already in place.</p>
+        <div class="step-input-label">WHAT ARE YOU SHIPPING RIGHT NOW?</div>
+        <textarea id="note-2" rows="3" placeholder="What did you build this week? What is still undone?" oninput="saveNote(2)"></textarea>
+        <button class="mark-btn" onclick="event.stopPropagation(); toggleDone(2)">Mark as Mastered</button>
+      </div>
+    </div>
+
+    <!-- STEP 4 -->
+    <div class="step-card" id="card-3" style="--step-color: #D97706;" onclick="toggleCard(3)">
+      <div class="step-top">
+        <div class="step-number">4</div>
+        <div class="step-info">
+          <div class="step-name">Scale</div>
+          <div class="step-tagline">Grow beyond yourself</div>
+        </div>
+        <div class="step-check" id="check-3" onclick="event.stopPropagation(); toggleDone(3)">✓</div>
+      </div>
+      <div class="step-body">
+        <p class="step-desc">Once execution is working, you multiply it. Systems, leverage, reach — this is how you grow beyond yourself. Scale is the reward for doing the first three steps well.</p>
+        <div class="step-input-label">WHAT SYSTEMS ARE YOU BUILDING?</div>
+        <textarea id="note-3" rows="3" placeholder="What are you automating, delegating, or systematizing?" oninput="saveNote(3)"></textarea>
+        <button class="mark-btn" onclick="event.stopPropagation(); toggleDone(3)">Mark as Mastered</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- CLOSING LINE -->
+  <div class="closing">
+    <div class="closing-line">See it clearly. Spread it loudly.<br>Build it consistently. Grow it beyond you.</div>
+    <div class="closing-steps">
+      <span class="closing-step" id="cs-0" style="--c: #2563EB;">Clarity</span>
+      <span class="closing-step" id="cs-1" style="--c: #7C3AED;">Evangelism</span>
+      <span class="closing-step" id="cs-2" style="--c: #059669;">Execution</span>
+      <span class="closing-step" id="cs-3" style="--c: #D97706;">Scale</span>
+    </div>
+  </div>
+
+  <!-- SAVED REFLECTIONS -->
+  <div class="saved-section" id="savedSection" style="display:none;">
+    <div class="saved-header">
+      <div class="saved-title">Your Saved Reflections</div>
+      <button class="clear-btn" onclick="clearAll()">Clear All</button>
+    </div>
+    <div class="saved-list" id="savedList"></div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <p class="footer-name">Built by Krapendra 🧠</p>
+    <p class="footer-desc">Sharing insights on Wisdom, Wealth, and Power — for a well-lived life.</p>
+    <div class="footer-links">
+      <a class="footer-link dark" href="https://www.linkedin.com/in/krapendrachandel" target="_blank">Follow on LinkedIn →</a>
+      <a class="footer-link outline" href="https://krapendrajournal.beehiiv.com" target="_blank">Subscribe Newsletter →</a>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const STORAGE_KEY = 'fof_data';
+  const COLORS = ['#2563EB','#7C3AED','#059669','#D97706'];
+  const NAMES = ['Clarity','Evangelism','Execution','Scale'];
+
+  let state = { done: [false,false,false,false], notes: ['','','',''], expanded: [false,false,false,false] };
+
+  function load() {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) state = JSON.parse(saved);
+    } catch(e) {}
+    render();
+  }
+
+  function save() {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e) {}
+  }
+
+  function toggleCard(i) {
+    state.expanded[i] = !state.expanded[i];
+    save(); render();
+  }
+
+  function toggleDone(i) {
+    state.done[i] = !state.done[i];
+    save(); render();
+  }
+
+  function saveNote(i) {
+    state.notes[i] = document.getElementById('note-'+i).value;
+    save();
+  }
+
+  function clearAll() {
+    if (!confirm('Clear all saved data?')) return;
+    state = { done:[false,false,false,false], notes:['','','',''], expanded:[false,false,false,false] };
+    save(); render();
+  }
+
+  function render() {
+    const doneCount = state.done.filter(Boolean).length;
+
+    // Progress
+    document.getElementById('progressFill').style.width = (doneCount/4*100)+'%';
+    document.getElementById('progressLabel').textContent = doneCount + ' OF 4 STEPS MASTERED';
+
+    for (let i = 0; i < 4; i++) {
+      const card = document.getElementById('card-'+i);
+      const check = document.getElementById('check-'+i);
+      const note = document.getElementById('note-'+i);
+      const cs = document.getElementById('cs-'+i);
+
+      card.classList.toggle('active', state.expanded[i] && !state.done[i]);
+      card.classList.toggle('done', state.done[i]);
+
+      // Show body if expanded or done
+      const body = card.querySelector('.step-body');
+      body.style.display = (state.expanded[i] || state.done[i]) ? 'block' : 'none';
+
+      // Note value
+      if (note && note.value !== state.notes[i]) note.value = state.notes[i];
+
+      // Mark button text
+      const btn = card.querySelector('.mark-btn');
+      if (btn) btn.textContent = state.done[i] ? '✓ Mastered' : 'Mark as Mastered';
+
+      // Closing step pills
+      cs.classList.toggle('done', state.done[i]);
+    }
+
+    // Saved section — show notes that have content
+    const hasNotes = state.notes.some(n => n.trim());
+    const savedSection = document.getElementById('savedSection');
+    savedSection.style.display = hasNotes ? 'block' : 'none';
+
+    if (hasNotes) {
+      document.getElementById('savedList').innerHTML = `
+        <div class="saved-card">
+          <div class="saved-card-top">
+            <span class="saved-date">CURRENT REFLECTION</span>
+          </div>
+          <div class="saved-steps-list">
+            ${state.notes.map((note, i) => note.trim() ? `
+              <div class="saved-step-row">
+                <div class="saved-step-dot" style="background:${COLORS[i]}"></div>
+                <div>
+                  <div class="saved-step-name">${NAMES[i]}</div>
+                  <div class="saved-step-note">${note}</div>
+                </div>
+              </div>
+            ` : '').join('')}
+          </div>
+        </div>
+      `;
+    }
+  }
+
+  load();
+</script>
+</body>
+</html>
+
